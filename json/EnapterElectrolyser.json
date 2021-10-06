@@ -1,0 +1,608 @@
+{
+	"holdingRegisters":[
+		{
+			"address":0,
+			"dataType": "Uint64",
+			"name": "Unix Time",
+			"comment": "Seconds from 1 January 1970 UTC. e.g. 02/29/2020 @ 3:15pm (UTC) represented as 1582989315."
+		},
+		{
+			"address":4,
+			"dataType": "Boolean",
+			"name": "Reboot",
+			"comment": "1 = Reboot."
+		},
+		{
+			"address":5,
+			"dataType": "Boolean",
+			"name": "Locate Electrolyser",
+			"comment": "1 = Start Blinking All LED; 0 = Stop Blinking All LED."
+		},
+		{
+			"address":6,
+			"dataType": "Boolean",
+			"name": "Maintenance Mode",
+			"comment": "1 = Enable Maintenance Mode; 0 = Disable Maintenance Mode."
+		},
+		{
+			"address":1000,
+			"dataType": "Boolean",
+			"name": "Start / Stop Electrolyser",
+			"comment": "1 = Start; 0 = Stop."
+		},
+		{
+			"address":1002,
+			"dataType": "Float32",
+			"name": "Production Rate [%]",
+			"comment": "Current production rate in percent (system reset set this value to 'Default Production Rate'), can be changed 'on-fly' even when electrolyser produce H2"
+		},
+		{
+			"address":1010,
+			"dataType": "Boolean",
+			"name": "Request Blowdown routine",
+			"comment": "1 = Request blowdown or read 'is blowdown requested'"
+		},
+		{
+			"address":1011,
+			"dataType": "Boolean",
+			"name": "Force Water Refilling",
+			"comment": "1 = Start Force Water Refilling"
+		},
+		{
+			"address":4000,
+			"dataType": "Boolean",
+			"name": "Configuration Begin",
+			"comment": "1 = Start configuration"
+		},
+		{
+			"address":4001,
+			"dataType": "Boolean",
+			"name": "Configuration Commit",
+			"comment": "1 = Commit current changes; 0 = Rollback changes"
+		},
+		{
+			"address":4020,
+			"dataType": "Uint32",
+			"name": "Set Ethernet IP Address",
+			"comment": "e.g. 0xC0A80201 (192.168.2.1); 0 = DHCP enabled"
+		},
+		{
+			"address":4022,
+			"dataType": "Uint32",
+			"name": "Set Ethernet IP Netmask",
+			"comment": "Ex: 255.255.255.0"
+		},
+		{
+			"address":4024,
+			"dataType": "Uint32",
+			"name": "Set Ethernet Gateway IP Address",
+			"comment": "Ex: 192.168.2.1"
+		},
+		{
+			"address":4026,
+			"dataType": "Uint64",
+			"name": "Enapter Chassis Serial Number",
+			"comment": "Ex: AA2101019SPI"
+		},
+		{
+			"address":4038,
+			"dataType": "Uint32",
+			"name": "Cloud logs",
+			"comment": "0 = disable logging (default); 1 = only fatal errors; 2 = fatal errors and errors; 3 = warnings and more important; 4 = everything before and important messages; 5 = all messages, except internal debug ones; 6 = all messages"
+		},
+		{
+			"address":4042,
+			"dataType": "Uint32",
+			"name": "System logs",
+			"comment": "0 = disable logging (default); 1 = only fatal errors; 2 = fatal errors and errors; 3 = warnings and more important; 4 = everything before and important messages; 5 = all messages, except internal debug ones; 6 = all messages"
+		},
+		{
+			"address":4044,
+			"dataType": "Uint32",
+			"name": "Syslog IP Address",
+			"comment": "Default IP address 255.255.255.255 (Broadcast)"
+		},
+		{
+			"address":4046,
+			"dataType": "Uint16",
+			"name": "Syslog Port",
+			"comment": "Default port 514"
+		},
+		{
+			"address":4308,
+			"dataType": "Float32",
+			"name": "Set Max Tank Pressure (Outlet)",
+			"comment": "bar"
+		},
+		{
+			"address":4310,
+			"dataType": "Float32",
+			"name": "Set Restart Pressure (Outlet)",
+			"comment": "bar"
+		},
+		{
+			"address":4376,
+			"dataType": "Uint64",
+			"name": "Enapter Stack Serial Number",
+			"comment": "Ex: 23E21011PI"
+		},
+		{
+			"address":4396,
+			"dataType": "Float32",
+			"name": "Set Default Production Rate [%]",
+			"comment": "This register can be modified only when stack is inactive (Idle or Maintenance mode)"
+		},
+		{
+			"address":4600,
+			"dataType": "Uint32",
+			"name": "Heartbeat ModBus Timeout",
+			"comment": "Seconds; 0 = disable"
+		},
+		{
+			"address":4602,
+			"dataType": "Uint32",
+			"name": "Heartbeat Gateway Timeout",
+			"comment": "Seconds; 0 = disable"
+		},
+		{
+			"address":4604,
+			"dataType": "Uint32",
+			"name": "Heartbeat UCM Timeout",
+			"comment": "Seconds; 0 = disable"
+		},
+		{
+			"address":4864,
+			"dataType": "Uint32",
+			"name": "Period for warmup water level",
+			"comment": "Milliseconds"
+		},
+		{
+			"address":4874,
+			"dataType": "Float32",
+			"name": "Minimal Stack current for check",
+			"comment": "Amperes"
+		},
+		{
+			"address":4876,
+			"dataType": "Float32",
+			"name": "Threshold for Stack current check",
+			"comment": "Amperes"
+		},
+		{
+			"address":4878,
+			"dataType": "Uint32",
+			"name": "Period for Stack current check",
+			"comment": "Milliseconds"
+		},
+		{
+			"address":4880,
+			"dataType": "Uint32",
+			"name": "Check Membrane Period",
+			"comment": "bar"
+		},
+		{
+			"address":4890,
+			"dataType": "Uint32",
+			"name": "Check Membrane Pressure Threshold",
+			"comment": "Milliseconds"
+		},
+		{
+			"address":4892,
+			"dataType": "Uint32",
+			"name": "Check Membrane Voltage Threshold",
+			"comment": "Volts"
+		},
+		{
+			"address":6014,
+			"dataType": "Float32",
+			"name": "PT01 minimal threshold",
+			"comment": "Dryer output pressure at which it will leave Stand-by"
+		},
+		{
+			"address":6016,
+			"dataType": "Float32",
+			"name": "PT01 maximal threshold",
+			"comment": "Dryer output pressure at which it will move to Stand-by"
+		},
+		{
+			"address":6018,
+			"dataType": "Boolean",
+			"name": "Start/Stop Dryer",
+			"comment": "Write: 1 = Start; 0 = Stop; Read until: ≠ 259 - command handled for start; Read until: = 259 - command handled for stop"
+		},
+		{
+			"address":6019,
+			"dataType": "Boolean",
+			"name": "Stop Dryer",
+			"comment": "Write: 1 = Stop; Read until: = 259 - command handled"
+		},
+		{
+			"address":6020,
+			"dataType": "Boolean",
+			"name": "Reboot Dryer",
+			"comment": "1 = Reboot"
+		},
+		{
+			"address":7010,
+			"dataType": "Boolean",
+			"name": "Turn ON or OFF F104 (V106 for LC version)",
+			"comment": "1 = ON (Open); 0 = OFF (Closed)"
+		},
+		{
+			"address":7011,
+			"dataType": "Boolean",
+			"name": "Dry Contact",
+			"comment": "1 = OK (Closed); 0 = NOT OK (Opened)"
+		}
+	],
+	"inputRegisters": [
+	
+		{
+			"address":0,
+			"dataType": "Uint32",
+			"name": "Device Model",
+			"comment": "0x454C3231 ('EL21')"
+		},
+		{
+			"address":2,
+			"dataType": "Uint16",
+			"name": "Firmware MAJOR and MINOR Version",
+			"comment": "e.g. 0x0100 (1.0)"
+		},
+		{
+			"address":3,
+			"dataType": "Uint16",
+			"name": "Firmware PATCH Version",
+			"comment": "e.g. 0x0011 (17)"
+		},
+		{
+			"address":4,
+			"dataType": "Uint32",
+			"name": "Firmware Build Number",
+			"comment": "e.g. 0x4E343471"
+		},
+		{
+			"address":6,
+			"dataType": "Uint128",
+			"name": "Device Control Board Serial Number",
+			"comment": "9E25E695-A66A-61DD-6570-50DB4E73652D"
+		},
+		{
+			"address":14,
+			"dataType": "Uint64",
+			"name": "Chassis Serial Number",
+			"comment": "1 bits - reserved, must be 0;10 bits - Product Unicode;11 bits - Year + Month;5 bits - Day;24 bits - Chassis Number;5 bits - Order;8 bits - Site Example"
+		},
+		{
+			"address":18,
+			"dataType": "Uint16",
+			"name": "System State",
+			"comment": "0 = Internal Error, System not Initialized yet; 1 = System in Operation; 2 = Error; 3 = System in Maintenance Mode; 4 = Fatal Error; 5 = System in Expert Mode."
+		},
+		{
+			"address":20,
+			"dataType": "Uint32",
+			"name": "Live time [seconds]",
+			"comment": "Total time during which a system is power up (not only time when stack is working)."
+		},
+		{
+			"address":22,
+			"dataType": "Uint32",
+			"name": "Uptime [seconds]",
+			"comment": "How long the system has been running"
+		},
+		{
+			"address":26,
+			"dataType": "Uint32",
+			"name": "Free memory",
+			"comment": "Memory which can be used"
+		},
+		{
+			"address":28,
+			"dataType": "Uint32",
+			"name": "Available memory",
+			"comment": "Memory which has not been allocated yet"
+		},
+		{
+			"address":30,
+			"dataType": "Uint32",
+			"name": "Free space on flash-card",
+			"comment": "Space on flash-card where the configuration is"
+		},
+		{
+			"address":768,
+			"dataType": "WarningEvents",
+			"name": "Warning Events Array",
+			"comment": "Warning Events Array represented by Error Codes. First Uint16 contains total quantity of Warning Events."
+		},
+		{
+			"address":832,
+			"dataType": "ErrorEvents",
+			"name": "Error Events Array",
+			"comment": "Error Events Array represented by Error Codes. First Uint16 contains total quantity of Error Events."
+		},
+		{
+			"address":1000,
+			"dataType": "Uint32",
+			"name": "Stack Serial Number",
+			"comment": "1 bits - reserved, must be 0;15 bits - Stack Type;11 bits - Year + Month;29 bits - Stack Number;8 bits - Site"
+		},
+		{
+			"address":1002,
+			"dataType": "Uint32",
+			"name": "Stack Start/Stop Cycles Quantity",
+			"comment": "How many Stack Start/Stop cycles"
+		},
+		{
+			"address":1004,
+			"dataType": "Uint32",
+			"name": "Stack Total Runtime",
+			"comment": "seconds"
+		},
+		{
+			"address":1006,
+			"dataType": "Float32",
+			"name": "Stack Total H2 Production",
+			"comment": "NL"
+		},
+		{
+			"address":1008,
+			"dataType": "Float32",
+			"name": "H2 Flow Rate",
+			"comment": "NL/hour, NAN when not producing H2;"
+		},
+		{
+			"address":1010,
+			"dataType": "Uint64",
+			"name": "Product Code",
+			"comment": "0 = ELE210535A2AXV01_03;1 = ELE210508A2AXV01_03;2 = ELE210535A2AXV04;3 = ELE210508A2AXV04;4 = ELE210535A2LSV01;5 = ELE210508A2LXV01;6 = ELE210535D4AXV01;7 = ELE210508D4AXV01;8 = ELE210535A2ASV05;9 = ELE210508A2ASV05"
+		},
+		{
+			"address":1200,
+			"dataType": "Uint16",
+			"name": "Electrolyser State",
+			"comment": "0 = Halted; 1= Maintenance mode; 2 = Idle; 3 = Steady; 4 = Stand-By (Max Pressure); 5 = Curve; 6 = Blowdown."
+		},
+		{
+			"address":4000,
+			"dataType": "Boolean",
+			"name": "Configuration Progress",
+			"comment": "1 = Configuration is in progress."
+		},
+		{
+			"address":4001,
+			"dataType": "Boolean",
+			"name": "Configuration Source",
+			"comment": "1 = Configuration over Modbus."
+		},
+		{
+			"address":4002,
+			"dataType": "Uint32",
+			"name": "Last Configuration Result",
+			"comment": "0 = OK, Configuration was completed successfully; 1 = Permanent, The operation has failed (internal or general error); 2 = No Entry, Configuration was not started or interrupted; 5 = I/O, Data save error; 11 - Try again, Configuration needs to be tried again; 13 = Access Denied, Some changed registers are read-only; 16 = Busy, Another configuration was in progress; 22 = Invalid, The data has invalid or wrong type."
+		},
+		{
+			"address":4004,
+			"dataType": "Uint16",
+			"name": "Last Configuration Wrong Holding",
+			"comment": "Keeps first invalid Holding register number which doesn't allow successful configuration commit."
+		},
+		{
+			"address":4600,
+			"dataType": "Uint16",
+			"name": "Heartbeat",
+			"comment": "Timeout for Modbus Heartbeat in seconds. 0 = disabled (default)"
+		},
+		{
+			"address":6000,
+			"dataType": "Uint16",
+			"name": "Dryer Error",
+			"comment": "Dryer error code (bitmask)."
+		},
+		{
+			"address":6001,
+			"dataType": "Uint16",
+			"name": "Dryer Warning",
+			"comment": "Dryer warning code (bitmask)."
+		},
+		{
+			"address":6002,
+			"dataType": "Float32",
+			"name": "Dryer TT00",
+			"comment": "Temperature of heater element for cartridge 0 (first line)."
+		},
+		{
+			"address":6004,
+			"dataType": "Float32",
+			"name": "Dryer TT01",
+			"comment": "Temperature of heater element for cartridge 1 (second line)."
+		},
+		{
+			"address":6006,
+			"dataType": "Float32",
+			"name": "Dryer TT02",
+			"comment": "Temperature of heater element for cartridge 2 (first line)."
+		},
+		{
+			"address":6008,
+			"dataType": "Float32",
+			"name": "Dryer TT03",
+			"comment": "Temperature of heater element for cartridge 3 (second line)."
+		},
+		{
+			"address":6010,
+			"dataType": "Float32",
+			"name": "Dryer PT00",
+			"comment": "Input pressure of the dryer."
+		},
+		{
+			"address":6012,
+			"dataType": "Float32",
+			"name": "Dryer PT01",
+			"comment": "Output pressure of the dryer."
+		},
+		{
+			"address":6100,
+			"dataType": "Uint32",
+			"name": "3 OUI octets for Wi-Fi MAC address",
+			"comment": "Ex: C8:2B:96"
+		},
+		{
+			"address":6102,
+			"dataType": "Uint32",
+			"name": "3 NIC octets for Wi-Fi MAC address",
+			"comment": "Ex: A8:F5:2C"
+		},
+		{
+			"address":6104,
+			"dataType": "Boolean",
+			"name": "Dryer Control Network Connection Status",
+			"comment": "1 = Online; 0 = Offline"
+		},
+		{
+			"address":7000,
+			"dataType": "Boolean",
+			"name": "High Electrolyte Level Switch (LSH102B_in)",
+			"comment": "1 = Electrolyte level over sensor; 0 = Electrolyte level below sensor."
+		},
+		{
+			"address":7001,
+			"dataType": "Boolean",
+			"name": "Very High Electrolyte Level Switch (LSHH102A_in)",
+			"comment": "1 = Electrolyte level over sensor; 0 = Electrolyte level below sensor."
+		},
+		{
+			"address":7002,
+			"dataType": "Boolean",
+			"name": "Low Electrolyte Level Switch (LSL102D_in)",
+			"comment": "1 = Electrolyte level over sensor; 0 = Electrolyte level below sensor."
+		},
+		{
+			"address":7003,
+			"dataType": "Boolean",
+			"name": "Medium Electrolyte Level Switch (LSM102C_in)",
+			"comment": "1 = Electrolyte level over sensor; 0 = Electrolyte level below sensor."
+		},
+		{
+			"address":7004,
+			"dataType": "Boolean",
+			"name": "Electrolyte Tank High Pressure Switch (PSH102_in)",
+			"comment": "1 = Pressure is too high; 0 = Pressure is normal."
+		},
+		{
+			"address":7005,
+			"dataType": "Boolean",
+			"name": "Very High Hydrogen Pressure Switch (PSHH101B_in)",
+			"comment": "1 = Pressure is too high; 0 = Pressure is normal."
+		},
+		{
+			"address":7006,
+			"dataType": "Boolean",
+			"name": "Downstream High Temperature Switch (TSH106_in)",
+			"comment": "1 = Temperature is too high. 0 = Temperature is normal."
+		},
+		{
+			"address":7007,
+			"dataType": "Boolean",
+			"name": "Electronic Compartment High Temperature Switch (TSH108_in)",
+			"comment": "1 = Temperature is too high. 0 = Temperature is normal."
+		},
+		{
+			"address":7008,
+			"dataType": "Boolean",
+			"name": "Very Low Electrolyte Temperature Switch (TSLL102B_in)",
+			"comment": "1 = Temperature is too low. 0 = Temperature is normal."
+		},
+		{
+			"address":7009,
+			"dataType": "Boolean",
+			"name": "Chassis Water Presence Switch (WPS104_in)",
+			"comment": "1 = Water is present on input; 0 = No water input."
+		},
+		{
+			"address":7500,
+			"dataType": "Float32",
+			"name": "Electrolyte Cooler Fan Speed (F103A_in_rpm)",
+			"comment": "[rpm]"
+		},
+		{
+			"address":7502,
+			"dataType": "Float32",
+			"name": "Air Circulation Fan Speed (F104B_in_rpm)",
+			"comment": "[rpm]"
+		},
+		{
+			"address":7504,
+			"dataType": "Float32",
+			"name": "Electronic Compartment Cooling Fan Speed (F108C_in_rpm)",
+			"comment": "[rpm]"
+		},
+		{
+			"address":7506,
+			"dataType": "Float32",
+			"name": "Electrolyte Flow Meter (FM106_in_lmin)",
+			"comment": "[Liters per minute]"
+		},
+		{
+			"address":7508,
+			"dataType": "Float32",
+			"name": "Stack Current (HASS_in_a)",
+			"comment": "[Ampere]"
+		},
+		{
+			"address":7510,
+			"dataType": "Float32",
+			"name": "PSU Voltage (Stack Voltage) (PSU_in_v)",
+			"comment": "[Volt]"
+		},
+		{
+			"address":7512,
+			"dataType": "Float32",
+			"name": "Inner Hydrogen Pressure (PT101A_in_bar)",
+			"comment": "[bar]"
+		},
+		{
+			"address":7514,
+			"dataType": "Float32",
+			"name": "Outer Hydrogen Pressure (PT101C_in_bar)",
+			"comment": "[bar]"
+		},
+		{
+			"address":7516,
+			"dataType": "Float32",
+			"name": "Water Inlet Pressure (PT105_in_bar)",
+			"comment": "[bar]"
+		},
+		{
+			"address":7518,
+			"dataType": "Float32",
+			"name": "Electrolyte Temperature (TT102A_in_c)",
+			"comment": "[°C]"
+		},
+		{
+			"address":7520,
+			"dataType": "Float32",
+			"name": "Downstream Temperature (TT106_in_c)",
+			"comment": "[°C]"
+		},
+		{
+			"address":8000,
+			"dataType": "Float32",
+			"name": "Inner Hydrogen Pressure Raw Sensor Value (PT101A_in_v)",
+			"comment": "Raw value, [Volt]"
+		},
+		{
+			"address":8002,
+			"dataType": "Float32",
+			"name": "Outer Hydrogen Pressure Raw Sensor Value (PT101C_in_v)",
+			"comment": "Raw value, [Volt]"
+		},
+		{
+			"address":8004,
+			"dataType": "Float32",
+			"name": "Stack Current Raw Sensor Value (HASS_in_v)",
+			"comment": "Raw value, [Volt]"
+		}
+
+	]
+}
