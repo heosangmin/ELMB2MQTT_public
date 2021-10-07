@@ -125,7 +125,7 @@ public class Sample {
                 buf.position(0);
 
                 if (publishRaw) {
-                    broker.publish(topic + "/hr/" + regAddress + "/raw/" , qos, buf.array());
+                    broker.publish(topic + "/hr/" + regAddress, qos, buf.array());
                 } else {
                     String payload = "";
                     if (dataTypeFinal.equals("raw")) {
