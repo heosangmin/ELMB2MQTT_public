@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 
 import de.re.easymodbus.exceptions.ModbusException;
 import de.re.easymodbus.modbusclient.ModbusClient;
@@ -8,6 +9,8 @@ import de.re.easymodbus.modbusclient.ModbusClient;
 public class Device {
     private String ipAddress = "127.0.0.1";
     private int port = 502;
+    private String topic;
+    private int qos;
 
     private ModbusClient modbusClient;
 
@@ -28,13 +31,21 @@ public class Device {
         modbusClient.Connect();
     }
 
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
+    public void disconnect() throws IOException {
+        if (modbusClient.isConnected()) {
+            modbusClient.Disconnect();
+        }
     }
 
-    public void setPort(int port) {
-        this.port = port;
-    }
+    public void setIpAddress(String ipAddress) {this.ipAddress = ipAddress;}
+    public void setPort(int port) {this.port = port;}
+    public void setTopic(String topic) {this.topic = topic;}
+    public void setQos(int qos) {this.qos = qos;}
+
+    public String getIpAddress() {return this.ipAddress;}
+    public int getPort() {return this.port;}
+    public String getTopic() {return this.topic;}
+    public int getQos() {return this.qos;}
 
     public void setHoldingRegisters(Register[] holdingRegisters) {
         this.holdingRegisters = holdingRegisters;
@@ -50,6 +61,30 @@ public class Device {
 
     public Register[] getInputRegisters() {
         return this.inputRegisters;
+    }
+
+    public ByteBuffer readHoldingRegister(int address, int registers) throws UnknownHostException, SocketException, ModbusException, IOException {
+        int[] regs = modbusClient.ReadHoldingRegisters(address, registers);
+        ByteBuffer buf = ByteBuffer.allocate(regs.length * 2);
+        // for (int reg : regs){
+        //     buf.put((byte) ((reg >> 8) & 0xFF));
+        //     buf.put((byte) (reg & 0xFF));
+        // }
+        for (int i = regs.length - 1; i > -1; i--) {
+            buf.put((byte) ((regs[i] >> 8) & 0xFF));
+            buf.put((byte) (regs[i] & 0xFF));
+        }
+        return buf;
+    }
+
+    public ByteBuffer readInputRegister(int address, int registers) throws UnknownHostException, SocketException, ModbusException, IOException {
+        int[] regs = modbusClient.ReadInputRegisters(address, registers);
+        ByteBuffer buf = ByteBuffer.allocate(regs.length * 2);
+        for (int reg : regs){
+            buf.put((byte) ((reg >> 8) & 0xFF));
+            buf.put((byte) (reg & 0xFF));
+        }
+        return buf;
     }
 
     public void writeUint64(int address, long value) throws UnknownHostException, SocketException, ModbusException, IOException {

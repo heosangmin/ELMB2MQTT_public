@@ -63,18 +63,21 @@
 		{
 			"address":4020,
 			"dataType": "Uint32",
+			"dataTypeFinal" : "ipv4",
 			"name": "Set Ethernet IP Address",
 			"comment": "e.g. 0xC0A80201 (192.168.2.1); 0 = DHCP enabled"
 		},
 		{
 			"address":4022,
 			"dataType": "Uint32",
+			"dataTypeFinal" : "ipv4",
 			"name": "Set Ethernet IP Netmask",
 			"comment": "Ex: 255.255.255.0"
 		},
 		{
 			"address":4024,
 			"dataType": "Uint32",
+			"dataTypeFinal" : "ipv4",
 			"name": "Set Ethernet Gateway IP Address",
 			"comment": "Ex: 192.168.2.1"
 		},

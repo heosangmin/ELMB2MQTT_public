@@ -1,6 +1,7 @@
 public class Register {
     public int address;
     public DataType dataType;
+    public String dataTypeFinal = "raw";
     public String name;
     public String comment;
 
@@ -10,6 +11,10 @@ public class Register {
 
     public void setDataType(DataType dataType) {
         this.dataType = dataType;
+    }
+
+    public void setDataTypeFinal(String dataTypeFinal) {
+        this.dataTypeFinal = dataTypeFinal;
     }
 
     public void setName(String name) {
@@ -26,6 +31,10 @@ public class Register {
 
     public DataType getDataType() {
         return this.dataType;
+    }
+
+    public String getDataTypeFinal() {
+        return this.dataTypeFinal;
     }
 
     public String getName() {

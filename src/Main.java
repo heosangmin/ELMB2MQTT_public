@@ -1,15 +1,11 @@
-import java.io.IOException;
-
-import de.re.easymodbus.exceptions.ModbusException;
 
 public class Main {
     public static void main(String[] args) {
-        Sample sample = new Sample();
+        Sample sample;
         try {
-            sample.test();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ModbusException e) {
+            sample = new Sample();
+            sample.readAndPublishAll();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

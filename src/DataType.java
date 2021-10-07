@@ -1,6 +1,6 @@
 public enum DataType {
     // name(bytes, registers)
-    Boolean(1,1),
+    Boolean(2,1),
     Uint16(2,1),
     Uint32(4,2),
     Uint64(8,4),
