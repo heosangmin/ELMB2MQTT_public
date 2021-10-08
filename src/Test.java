@@ -1,7 +1,7 @@
 import java.nio.ByteBuffer;
 
 public class Test {
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
 
         //int i = 0x9E25E695A66A61DD657050DB4E73652D;
 

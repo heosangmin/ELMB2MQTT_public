@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -111,7 +112,8 @@ public class Sample {
             device.writeUint64(0, 1633599629749L); // temp
             device.writeUint32(4020, 0xC0A80201); // temp
             device.writeUint32(4022, 0xFFFFFF00); // temp
-            device.writeUint64(4026, ByteBuffer.wrap("AA2101019SPI".getBytes()).getLong()); // temp
+            device.writeUint64(4026, 586601960808264448L); // temp
+            device.writeUint16(4046, 514); // temp
 
             for (Register hr : device.getHoldingRegisters()) {
                 String regName = hr.getName();
@@ -119,13 +121,13 @@ public class Sample {
                 DataType dataType = hr.getDataType();
                 String dataTypeFinal = hr.getDataTypeFinal();
 
-                System.out.println(String.format(format_register, "HR", regAddress, dataType, dataTypeFinal, regName));
+                //System.out.println(String.format(format_register, "HR", regAddress, dataType, dataTypeFinal, regName));
                 
                 ByteBuffer buf = device.readHoldingRegister(regAddress, dataType.registers);
                 buf.position(0);
 
                 if (publishRaw) {
-                    broker.publish(topic + "/hr/" + regAddress, qos, buf.array());
+                    publish(topic + "/hr/" + regAddress, qos, buf.array());
                 } else {
                     String payload = "";
                     if (dataTypeFinal.equals("raw")) {
@@ -143,15 +145,12 @@ public class Sample {
                             payload = "TODO";
                         }
                     } else if (dataTypeFinal.equals("ipv4")) {
-                        byte[] byte4 = buf.array();
-                        String val1 = Integer.toString(Byte.toUnsignedInt(byte4[0]));
-                        String val2 = Integer.toString(Byte.toUnsignedInt(byte4[1]));
-                        String val3 = Integer.toString(Byte.toUnsignedInt(byte4[2]));
-                        String val4 = Integer.toString(Byte.toUnsignedInt(byte4[3]));
-                        payload = String.format("%s.%s.%s.%s", val1, val2, val3, val4);
+                        payload = parseIpv4(buf);
+                    } else if (dataTypeFinal.equals("ChassisSerialNumber")) {
+                        payload = parseChassisSerialNumber(buf);
                     }
     
-                    broker.publish(topic + "/hr/" + regAddress , qos, payload);
+                    publish(topic + "/hr/" + regAddress , qos, payload.getBytes());
                 }
             }
 
@@ -178,6 +177,73 @@ public class Sample {
             broker.disconnect();
         }
 
+    }
+
+    // publish(トピック, QOS, 送信データ)
+    // MQTTサーバーのあるトピックへデータを配布（pusish)する。
+    private void publish(String topic, int qos, byte[] payload) throws MqttException {
+        if (!broker.isConnected()) {
+            broker.connect();
+        }
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        String format = "[mqtt][pub][%s][%s] = %s";
+        broker.publish(topic, qos, payload);
+        if (debugOutput) {
+            System.out.println(String.format(format, timestamp, topic, new String(payload)));
+        }
+    }
+
+    private String parseIpv4(ByteBuffer buf) {
+        byte[] bytes = buf.array();
+        String val1 = Integer.toString(Byte.toUnsignedInt(bytes[0]));
+        String val2 = Integer.toString(Byte.toUnsignedInt(bytes[1]));
+        String val3 = Integer.toString(Byte.toUnsignedInt(bytes[2]));
+        String val4 = Integer.toString(Byte.toUnsignedInt(bytes[3]));
+        return String.format("%s.%s.%s.%s", val1, val2, val3, val4);
+    }
+
+    private String parseChassisSerialNumber(ByteBuffer buf) {
+        // ChassisSerialNumberは、64bitであることを前提とする。
+        // https://handbook.enapter.com/electrolyser/el21_firmware/1.8.1/modbus_tcp_communication_interface.html#example-reading-chassis-serial-number
+        long v = buf.getLong();
+        if (v <= 0) {
+            return "";
+        }
+
+        char[] binaries = Long.toBinaryString(v).toCharArray();
+        int size = binaries.length;
+        int offset = 64 - size;
+        
+        try {
+            String productUnicode = new String(Arrays.copyOfRange(binaries, 0, 11 - offset)); // ~10 bits
+            String yearMonth = new String(Arrays.copyOfRange(binaries, 11 - offset, 22 - offset)); // 11 bits
+            String day = new String(Arrays.copyOfRange(binaries, 22 - offset, 27 - offset)); // 5 bits
+            String chassisNumber = new String(Arrays.copyOfRange(binaries, 27 - offset, 51 - offset)); // 24 bits
+            String order = new String(Arrays.copyOfRange(binaries, 51 - offset, 56 - offset)); // 5 bits
+            String site = new String(Arrays.copyOfRange(binaries, 56 - offset, 64 - offset)); // 8 bits
+
+            // System.out.println(String.format(format_csn, "productUnicode", productUnicode, Integer.parseInt(productUnicode, 2)));
+            // System.out.println(String.format(format_csn, "yearMonth", yearMonth, Integer.parseInt(yearMonth, 2)));
+            // System.out.println(String.format(format_csn, "day", day, Integer.parseInt(day, 2)));
+            // System.out.println(String.format(format_csn, "chassisNumber", chassisNumber, Integer.parseInt(chassisNumber, 2)));
+            // System.out.println(String.format(format_csn, "order", order, Integer.parseInt(order, 2)));
+            // System.out.println(String.format(format_csn, "site", site , Integer.parseInt(site, 2)));
+
+            int iProductUnicode = Integer.parseInt(productUnicode, 2);
+            int iProductUnicode1 = iProductUnicode % 32 + 64;
+            int iProductUnicode2 = iProductUnicode / 32 + 64;
+            int iYearMonth = Integer.parseInt(yearMonth, 2);
+            int iYear = iYearMonth / 12;
+            int iMonth = iYearMonth % 12;
+            int iDay = Integer.parseInt(day, 2);
+            int iChassisNumber = Integer.parseInt(chassisNumber, 2);
+            int iOrder = Integer.parseInt(order, 2) + 64;
+            site = (Integer.parseInt(site, 2) == 0) ? "PI" : "SA";
+    
+            return String.format("%c%c%02d%02d%d%d%c%s", iProductUnicode1, iProductUnicode2, iYear, iMonth, iDay, iChassisNumber, iOrder, site);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return "";
+        }
     }
     
 }

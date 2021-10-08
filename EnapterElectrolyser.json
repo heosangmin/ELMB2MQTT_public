@@ -84,6 +84,7 @@
 		{
 			"address":4026,
 			"dataType": "Uint64",
+			"dataTypeFinal" : "ChassisSerialNumber",
 			"name": "Enapter Chassis Serial Number",
 			"comment": "Ex: AA2101019SPI"
 		},
@@ -102,6 +103,7 @@
 		{
 			"address":4044,
 			"dataType": "Uint32",
+			"dataTypeFinal": "ipv4",
 			"name": "Syslog IP Address",
 			"comment": "Default IP address 255.255.255.255 (Broadcast)"
 		},
