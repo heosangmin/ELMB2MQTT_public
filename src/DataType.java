@@ -6,8 +6,7 @@ public enum DataType {
     Uint64(8,4),
     Uint128(16,8),
     Float32(4,2),
-    WarningEvents(128,64),
-    ErrorEvents(128,64);
+    Events(128,64);
     public int bytes;
     public int registers;
     private DataType(int bytes, int registers) {

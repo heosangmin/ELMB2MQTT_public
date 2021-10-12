@@ -60,7 +60,7 @@ public class Sample {
         long mqtt_publish_interval = Long.parseLong(prop.getProperty("mqtt_publish_interval", "60000"));
         System.out.println(String.format(format_mqtt, mqtt_ip, mqtt_port, mqtt_qos, mqtt_publish_interval));
 
-        broker = new MqttBroker(mqtt_ip, mqtt_port, "mqtt_id");
+        broker = new MqttBroker(mqtt_ip, mqtt_port, "mqtt_id_modbus");
 
         // publish mode
 
@@ -95,9 +95,7 @@ public class Sample {
 
     public void readAndPublishAll() throws UnknownHostException, SocketException, ModbusException, IOException, MqttPersistenceException, MqttException {
 
-        Timestamp timestamp;
-        String format = "[ModBus][read][%s] %s";
-        String format_register = "[ModBus][%s] addr: %5d | type: %13s | typeFinal: %s | name: %s";
+        String format_register = "[ModBus][%s] addr: %5d | type: %7s | typeFinal: %s | name: %s";
 
         if (!broker.isConnected()) {
             broker.connect();
@@ -109,11 +107,11 @@ public class Sample {
             String topic = device.getTopic();
             int qos = device.getQos();
 
-            device.writeUint64(0, 1633599629749L); // temp
-            device.writeUint32(4020, 0xC0A80201); // temp
-            device.writeUint32(4022, 0xFFFFFF00); // temp
-            device.writeUint64(4026, 586601960808264448L); // temp
-            device.writeUint16(4046, 514); // temp
+            // device.writeUint64(0, 1633599629749L); // temp
+            // device.writeUint32(4020, 0xC0A80201); // temp
+            // device.writeUint32(4022, 0xFFFFFF00); // temp
+            // device.writeUint64(4026, 586601960808264448L); // temp
+            // device.writeUint16(4046, 514); // temp
 
             for (Register hr : device.getHoldingRegisters()) {
                 String regName = hr.getName();
@@ -121,7 +119,9 @@ public class Sample {
                 DataType dataType = hr.getDataType();
                 String dataTypeFinal = hr.getDataTypeFinal();
 
-                //System.out.println(String.format(format_register, "HR", regAddress, dataType, dataTypeFinal, regName));
+                if (debugOutput) {
+                    System.out.println(String.format(format_register, "HR", regAddress, dataType, dataTypeFinal, regName));
+                }
                 
                 ByteBuffer buf = device.readHoldingRegister(regAddress, dataType.registers);
                 buf.position(0);
@@ -131,19 +131,7 @@ public class Sample {
                 } else {
                     String payload = "";
                     if (dataTypeFinal.equals("raw")) {
-                        if (dataType.equals(DataType.Boolean)) {
-                            payload = Integer.toUnsignedString(Short.toUnsignedInt(buf.getShort()));
-                        } else if (dataType.equals(DataType.Float32)) {
-                            payload = Float.toString(buf.getFloat());
-                        } else if (dataType.equals(DataType.Uint16)) {
-                            payload = Integer.toUnsignedString(Short.toUnsignedInt(buf.getShort()));
-                        } else if (dataType.equals(DataType.Uint32)) {
-                            payload = Integer.toUnsignedString(buf.getInt());
-                        } else if (dataType.equals(DataType.Uint64)) {
-                            payload = Long.toUnsignedString(buf.getLong());
-                        } else if (dataType.equals(DataType.Uint128)) {
-                            payload = "TODO";
-                        }
+                        payload = parseRaw(buf, dataType);
                     } else if (dataTypeFinal.equals("ipv4")) {
                         payload = parseIpv4(buf);
                     } else if (dataTypeFinal.equals("ChassisSerialNumber")) {
@@ -154,22 +142,40 @@ public class Sample {
                 }
             }
 
-            // for (Register hr : device.getInputRegisters()) {
-            //     String regName = hr.getName();
-            //     int regAddress = hr.getAddress();
-            //     DataType dataType = hr.getDataType();
-            //     String dataTypeFinal = hr.getDataTypeFinal();
+            for (Register ir : device.getInputRegisters()) {
+                String regName = ir.getName();
+                int regAddress = ir.getAddress();
+                DataType dataType = ir.getDataType();
+                String dataTypeFinal = ir.getDataTypeFinal();
 
-            //     System.out.println(String.format(format_register, "IR", regAddress, dataType, dataTypeFinal, regName));
-                
-            //     // 1. read HoldingRegister
-            //     ByteBuffer buf = device.readInputRegister(regAddress, dataType.registers);
+                ByteBuffer buf = device.readInputRegister(regAddress, dataType.registers);
+                buf.position(0);
 
-            //     // 2. convert data type (if it has a final data type)
-                
-            //     // 3. publish
-            //     broker.publish(topic + "/ir/" + regAddress , qos, buf.array());
-            // }
+                if (debugOutput) {
+                    System.out.println(String.format(format_register, "IR", regAddress, dataType, dataTypeFinal, regName));
+                }
+            
+                if (publishRaw) {
+                    publish(topic + "/ir/" + regAddress, qos, buf.array());
+                } else {
+                    String payload = "";
+                    if (dataTypeFinal.equals("raw")) {
+                        payload = parseRaw(buf, dataType);
+                    } else if (dataTypeFinal.equals("ascii")) {
+                        payload = new String(buf.array());
+                    } else if (dataTypeFinal.equals("uuid")) {
+                        payload = parseUUID(buf);
+                    } else if (dataTypeFinal.equals("hex")) {
+                        payload = parseHex(buf);
+                    } else if (dataTypeFinal.equals("numDotNum")) {
+                        payload = parseNumDotNum(buf);
+                    } else if (dataTypeFinal.equals("3octets")) {
+                        payload = parse3octets(buf);
+                    }
+
+                    publish(topic + "/ir/" + regAddress , qos, payload.getBytes());
+                }
+            }
 
             device.disconnect();
 
@@ -191,6 +197,60 @@ public class Sample {
         if (debugOutput) {
             System.out.println(String.format(format, timestamp, topic, new String(payload)));
         }
+    }
+
+    private String parse3octets(ByteBuffer buf) {
+        String payload = "";
+        byte[] bytes = buf.array();
+        payload = String.format("%X:%X:%X",bytes[1],bytes[2],bytes[3]);
+        return payload;
+    }
+
+    private String parseNumDotNum(ByteBuffer buf) {
+        String payload = "";
+        byte[] bytes = buf.array();
+        payload = String.format("%d.%d",bytes[0],bytes[1]);
+        return payload;
+    }
+
+    private String parseHex(ByteBuffer buf) {
+        byte[] bytes = buf.array();
+        String payload = "0x";
+        for (byte b : bytes) {
+            payload = payload + String.format("%X", b);
+        }
+        return payload;
+    }
+
+    private String parseUUID(ByteBuffer buf) {
+        byte[] bytes = buf.array();
+        String payload = "";
+        String format = "%X%X%X%X-%X%X-%X%X-%X%X-%X%X%X%X%X%X";
+        payload = String.format(
+            format,
+            bytes[0],bytes[1],bytes[2],bytes[3],
+            bytes[4],bytes[5],
+            bytes[6],bytes[7],
+            bytes[8],bytes[9],
+            bytes[10],bytes[11],bytes[12],bytes[13],bytes[14],bytes[15]
+        );
+        return payload;
+    }
+
+    private String parseRaw(ByteBuffer buf, DataType dataType) {
+        String payload = "";
+        if (dataType.equals(DataType.Boolean) || dataType.equals(DataType.Uint16)) {
+            payload = Integer.toUnsignedString(Short.toUnsignedInt(buf.getShort()));
+        } else if (dataType.equals(DataType.Float32)) {
+            payload = Float.toString(buf.getFloat());
+        } else if (dataType.equals(DataType.Uint32)) {
+            payload = Integer.toUnsignedString(buf.getInt());
+        } else if (dataType.equals(DataType.Uint64)) {
+            payload = Long.toUnsignedString(buf.getLong());
+        } else if (dataType.equals(DataType.Uint128)) {
+            payload = "TODO";
+        }
+        return payload;
     }
 
     private String parseIpv4(ByteBuffer buf) {
@@ -242,6 +302,7 @@ public class Sample {
     
             return String.format("%c%c%02d%02d%d%d%c%s", iProductUnicode1, iProductUnicode2, iYear, iMonth, iDay, iChassisNumber, iOrder, site);
         } catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
             return "";
         }
     }

@@ -245,12 +245,14 @@
 		{
 			"address":0,
 			"dataType": "Uint32",
+			"dataTypeFinal": "ascii",
 			"name": "Device Model",
 			"comment": "0x454C3231 ('EL21')"
 		},
 		{
 			"address":2,
 			"dataType": "Uint16",
+			"dataTypeFinal": "numDotNum",
 			"name": "Firmware MAJOR and MINOR Version",
 			"comment": "e.g. 0x0100 (1.0)"
 		},
@@ -263,12 +265,14 @@
 		{
 			"address":4,
 			"dataType": "Uint32",
+			"dataTypeFinal": "hex",
 			"name": "Firmware Build Number",
 			"comment": "e.g. 0x4E343471"
 		},
 		{
 			"address":6,
 			"dataType": "Uint128",
+			"dataTypeFinal": "uuid",
 			"name": "Device Control Board Serial Number",
 			"comment": "9E25E695-A66A-61DD-6570-50DB4E73652D"
 		},
@@ -276,6 +280,7 @@
 			"address":14,
 			"dataType": "Uint64",
 			"name": "Chassis Serial Number",
+			"dataTypeFinal": "ChassisSerialNumber",
 			"comment": "1 bits - reserved, must be 0;10 bits - Product Unicode;11 bits - Year + Month;5 bits - Day;24 bits - Chassis Number;5 bits - Order;8 bits - Site Example"
 		},
 		{
@@ -316,13 +321,13 @@
 		},
 		{
 			"address":768,
-			"dataType": "WarningEvents",
+			"dataType": "Events",
 			"name": "Warning Events Array",
 			"comment": "Warning Events Array represented by Error Codes. First Uint16 contains total quantity of Warning Events."
 		},
 		{
 			"address":832,
-			"dataType": "ErrorEvents",
+			"dataType": "Events",
 			"name": "Error Events Array",
 			"comment": "Error Events Array represented by Error Codes. First Uint16 contains total quantity of Error Events."
 		},
@@ -449,12 +454,14 @@
 		{
 			"address":6100,
 			"dataType": "Uint32",
+			"dataTypeFinal": "3octets",
 			"name": "3 OUI octets for Wi-Fi MAC address",
 			"comment": "Ex: C8:2B:96"
 		},
 		{
 			"address":6102,
 			"dataType": "Uint32",
+			"dataTypeFinal": "3octets",
 			"name": "3 NIC octets for Wi-Fi MAC address",
 			"comment": "Ex: A8:F5:2C"
 		},

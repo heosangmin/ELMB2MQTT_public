@@ -66,10 +66,6 @@ public class Device {
     public ByteBuffer readHoldingRegister(int address, int registers) throws UnknownHostException, SocketException, ModbusException, IOException {
         int[] regs = modbusClient.ReadHoldingRegisters(address, registers);
         ByteBuffer buf = ByteBuffer.allocate(regs.length * 2);
-        // for (int reg : regs){
-        //     buf.put((byte) ((reg >> 8) & 0xFF));
-        //     buf.put((byte) (reg & 0xFF));
-        // }
         for (int i = regs.length - 1; i > -1; i--) {
             buf.put((byte) ((regs[i] >> 8) & 0xFF));
             buf.put((byte) (regs[i] & 0xFF));
@@ -80,9 +76,9 @@ public class Device {
     public ByteBuffer readInputRegister(int address, int registers) throws UnknownHostException, SocketException, ModbusException, IOException {
         int[] regs = modbusClient.ReadInputRegisters(address, registers);
         ByteBuffer buf = ByteBuffer.allocate(regs.length * 2);
-        for (int reg : regs){
-            buf.put((byte) ((reg >> 8) & 0xFF));
-            buf.put((byte) (reg & 0xFF));
+        for (int i = regs.length - 1; i > -1; i--) {
+            buf.put((byte) ((regs[i] >> 8) & 0xFF));
+            buf.put((byte) (regs[i] & 0xFF));
         }
         return buf;
     }
