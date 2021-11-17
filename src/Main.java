@@ -1,10 +1,10 @@
 
 public class Main {
     public static void main(String[] args) {
-        Sample sample;
+        Worker worker;
         try {
-            sample = new Sample();
-            sample.readAndPublishAll();
+            worker = new Worker();
+            worker.readAndPublishAll();
         } catch (Exception e) {
             e.printStackTrace();
         }

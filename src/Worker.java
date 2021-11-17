@@ -19,8 +19,8 @@ import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import de.re.easymodbus.exceptions.ModbusException;
 
 
-public class Sample {
-    private final String CONFIG = "modbus-sample.properties";
+public class Worker {
+    private final String CONFIG = "mb2mqtt.properties";
     private final String JSON_ENAPTER_ELECTROLYSER = "EnapterElectrolyser.json";
 
     private final String TYPE_ENAPTER_ELECTROLYSER = "EnapterElectrolyser";
@@ -32,7 +32,7 @@ public class Sample {
 
     private MqttBroker broker;
 
-    public Sample() throws FileNotFoundException, IOException {
+    public Worker() throws FileNotFoundException, IOException {
         devices = new ArrayList<Device>();
 
         Properties prop = new Properties();
