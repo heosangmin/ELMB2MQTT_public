@@ -17,18 +17,36 @@ public class Device {
     private Register[] holdingRegisters; // RW
     private Register[] inputRegisters; // R
 
-    public Device() {
-
+    public static enum DeviceType {
+        ENAPTER_ELECTROLYSER,
+        TOSHIBA_H2REX
     }
+
+    private DeviceType deviceType;
+
+    public Device() {}
 
     public Device(String ipAddress, int port) {
         this.ipAddress = ipAddress;
         this.port = port;
     }
 
+    public void setDeviceType(DeviceType type) {
+        this.deviceType = type;
+    }
+
+    public DeviceType getDeviceType() {
+        return deviceType;
+    }
+
     public void connect() throws UnknownHostException, IOException {
-        modbusClient = new ModbusClient(ipAddress, port);
-        modbusClient.Connect();
+        if (modbusClient == null) {
+            modbusClient = new ModbusClient(ipAddress, port);
+        }
+        if (!modbusClient.isConnected()) {
+            //System.out.println("connecting...");
+            modbusClient.Connect();
+        }
     }
 
     public void disconnect() throws IOException {
@@ -93,19 +111,6 @@ public class Device {
         modbusClient.WriteMultipleRegisters(address, regs);
     }
 
-    // public long readUint64(int address) throws UnknownHostException, SocketException, ModbusException, IOException {
-    //     int[] regs = modbusClient.ReadHoldingRegisters(address, 4);
-    //     long value = 0;
-    //     long reg0 = regs[0] & 0xFFFF;
-    //     long reg1 = (regs[1] & 0xFFFF) << 16;
-    //     long reg2 = (regs[2] & 0xFFFFL) << 32;
-    //     long reg3 = (regs[3] & 0xFFFFL) << 48;
-        
-    //     value =  reg0 + reg1 + reg2 + reg3;
-
-    //     return value;
-    // }
-
     public byte[] readUint64HR(int address) throws UnknownHostException, SocketException, ModbusException, IOException {
         int[] regs = modbusClient.ReadHoldingRegisters(address, 4);
         byte[] bytes = {
@@ -159,10 +164,6 @@ public class Device {
         return bytes;
     }
 
-    public void writeBoolean(int address, int value) throws UnknownHostException, SocketException, ModbusException, IOException {
-        modbusClient.WriteSingleRegister(address, value);
-    }
-
     public boolean readBooleanHR(int address) throws UnknownHostException, SocketException, ModbusException, IOException {
         int result = modbusClient.ReadHoldingRegisters(address, 1)[0];
         return result != 0;
@@ -173,11 +174,6 @@ public class Device {
         return result != 0;
     }
 
-    public void writeFloat32(int address, float value) throws UnknownHostException, SocketException, ModbusException, IOException {
-        int[] regs = ModbusClient.ConvertFloatToTwoRegisters(value);
-        modbusClient.WriteMultipleRegisters(address, regs);
-    }
-
     public float readFloat32HR(int address) throws UnknownHostException, SocketException, ModbusException, IOException {
         int[] regs = modbusClient.ReadHoldingRegisters(address, 2);
         return ModbusClient.ConvertRegistersToFloat(regs);
@@ -186,11 +182,6 @@ public class Device {
     public float readFloat32IR(int address) throws UnknownHostException, SocketException, ModbusException, IOException {
         int[] regs = modbusClient.ReadInputRegisters(address, 2);
         return ModbusClient.ConvertRegistersToFloat(regs);
-    }
-
-    public void writeUint32(int address, int value) throws UnknownHostException, SocketException, ModbusException, IOException {
-        int regs[] = ModbusClient.ConvertDoubleToTwoRegisters(value);
-        modbusClient.WriteMultipleRegisters(address, regs);
     }
 
     public byte[] readUint32HR(int address) throws UnknownHostException, SocketException, ModbusException, IOException {
@@ -214,16 +205,26 @@ public class Device {
         };
         return bytes;
     }
-
-    public void writeUint16(int address, int value) throws UnknownHostException, SocketException, ModbusException, IOException {
-        modbusClient.WriteSingleRegister(address, value);
-    }
-
+    
     public int readUint16HR(int address) throws UnknownHostException, SocketException, ModbusException, IOException {
         return modbusClient.ReadHoldingRegisters(address, 1)[0];
     }
-
+    
     public int readUint16IR(int address) throws UnknownHostException, SocketException, ModbusException, IOException {
         return modbusClient.ReadInputRegisters(address, 1)[0];
+    }
+
+    public void writeInt16(int address, int value) throws UnknownHostException, SocketException, ModbusException, IOException {
+        modbusClient.WriteSingleRegister(address, value);
+    }
+
+    public void writeInt32(int address, int value) throws UnknownHostException, SocketException, ModbusException, IOException {
+        int regs[] = ModbusClient.ConvertDoubleToTwoRegisters(value);
+        modbusClient.WriteMultipleRegisters(address, regs);
+    }
+
+    public void writeFloat32(int address, float value) throws UnknownHostException, SocketException, ModbusException, IOException {
+        int[] regs = ModbusClient.ConvertFloatToTwoRegisters(value);
+        modbusClient.WriteMultipleRegisters(address, regs);
     }
 }

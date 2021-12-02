@@ -10,11 +10,15 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import de.re.easymodbus.exceptions.ModbusException;
 
@@ -22,17 +26,25 @@ import de.re.easymodbus.exceptions.ModbusException;
 public class Sample {
     private final String CONFIG = "modbus-sample.properties";
     private final String JSON_ENAPTER_ELECTROLYSER = "EnapterElectrolyser.json";
+    private final String JSON_TOSHIBA_H2REX = "ToshibaH2Rex.json";
 
     private final String TYPE_ENAPTER_ELECTROLYSER = "EnapterElectrolyser";
+    private final String TYPE_TOSHIBA_H2REX = "ToshibaH2Rex";
 
     private ArrayList<Device> devices;
     private boolean debugOutput = false;
     private boolean getOnly = false;
     private boolean publishRaw = true;
 
+    private String TOPIC_SET;
+    private int QOS_SET;
+
+    private String TOPIC_SET_RES;
+    private int QOS_SET_RES;
+
     private MqttBroker broker;
 
-    public Sample() throws FileNotFoundException, IOException {
+    public Sample() throws FileNotFoundException, IOException, MqttException {
         devices = new ArrayList<Device>();
 
         Properties prop = new Properties();
@@ -61,8 +73,17 @@ public class Sample {
         System.out.println(String.format(format_mqtt, mqtt_ip, mqtt_port, mqtt_qos, mqtt_publish_interval));
 
         broker = new MqttBroker(mqtt_ip, mqtt_port, "mqtt_id_modbus");
+        broker.connect();
 
-        // publish mode
+        // mqtt subscribe topic, qos
+        // SET用topic情報
+        TOPIC_SET = prop.getProperty("mqtt_topic_set", "set/#");
+        QOS_SET = Integer.parseInt(prop.getProperty("mqtt_qos_set", "1"));
+        System.out.println(String.format("[properties] topic_set=%s | qos_set=%s", TOPIC_SET, QOS_SET));
+
+        TOPIC_SET_RES = prop.getProperty("mqtt_topic_set_res", "set_res");
+        QOS_SET_RES = Integer.parseInt(prop.getProperty("mqtt_qos_set_res", "1"));
+        System.out.println(String.format("[properties] topic_set_res=%s | qos_set_res=%s", TOPIC_SET_RES, QOS_SET_RES));
 
         // Modbus機器情報（device）
         byte[] jsonData;
@@ -78,40 +99,40 @@ public class Sample {
             if (type.equals(TYPE_ENAPTER_ELECTROLYSER)){
                 jsonData = Files.readAllBytes(Paths.get(JSON_ENAPTER_ELECTROLYSER));
                 ObjectMapper mapper = new ObjectMapper();
-                Device device = mapper.readValue(jsonData, Device.class);    
+                Device device = mapper.readValue(jsonData, Device.class);
+                device.setDeviceType(Device.DeviceType.ENAPTER_ELECTROLYSER);
                 device.setIpAddress(ip);
                 device.setPort(port);
                 device.setTopic(topic);
                 device.setQos(qos);
+                device.connect();
+                devices.add(device);
+            } else if (type.equals(TYPE_TOSHIBA_H2REX)){
+                jsonData = Files.readAllBytes(Paths.get(JSON_TOSHIBA_H2REX));
+                ObjectMapper mapper = new ObjectMapper();
+                Device device = mapper.readValue(jsonData, Device.class);
+                device.setDeviceType(Device.DeviceType.TOSHIBA_H2REX);
+                device.setIpAddress(ip);
+                device.setPort(port);
+                device.setTopic(topic);
+                device.setQos(qos);
+                device.connect();
                 devices.add(device);
             } else {
                 System.out.println("error: type " + type + " is not supported.");
                 System.exit(-1);
             }
         }
-
-
     }
 
     public void readAndPublishAll() throws UnknownHostException, SocketException, ModbusException, IOException, MqttPersistenceException, MqttException {
 
-        String format_register = "[ModBus][%s] addr: %5d | type: %7s | typeFinal: %s | name: %s";
-
-        if (!broker.isConnected()) {
-            broker.connect();
-        }
+        String format_register = "[ModB][%s] addr: %5d | type: %7s | typeFinal: %s | name: %s";
 
         for ( Device device : devices ) {
 
-            device.connect();
             String topic = device.getTopic();
             int qos = device.getQos();
-
-            // device.writeUint64(0, 1633599629749L); // temp
-            // device.writeUint32(4020, 0xC0A80201); // temp
-            // device.writeUint32(4022, 0xFFFFFF00); // temp
-            // device.writeUint64(4026, 586601960808264448L); // temp
-            // device.writeUint16(4046, 514); // temp
 
             for (Register hr : device.getHoldingRegisters()) {
                 String regName = hr.getName();
@@ -130,12 +151,12 @@ public class Sample {
                     publish(topic + "/hr/" + regAddress, qos, buf.array());
                 } else {
                     String payload = "";
-                    if (dataTypeFinal.equals("raw")) {
-                        payload = parseRaw(buf, dataType);
-                    } else if (dataTypeFinal.equals("ipv4")) {
+                    if (dataTypeFinal.equals("ipv4")) {
                         payload = parseIpv4(buf);
                     } else if (dataTypeFinal.equals("ChassisSerialNumber")) {
                         payload = parseChassisSerialNumber(buf);
+                    } else {
+                        payload = parseRaw(buf, dataType);
                     }
     
                     publish(topic + "/hr/" + regAddress , qos, payload.getBytes());
@@ -159,9 +180,7 @@ public class Sample {
                     publish(topic + "/ir/" + regAddress, qos, buf.array());
                 } else {
                     String payload = "";
-                    if (dataTypeFinal.equals("raw")) {
-                        payload = parseRaw(buf, dataType);
-                    } else if (dataTypeFinal.equals("ascii")) {
+                    if (dataTypeFinal.equals("ascii")) {
                         payload = new String(buf.array());
                     } else if (dataTypeFinal.equals("uuid")) {
                         payload = parseUUID(buf);
@@ -171,32 +190,128 @@ public class Sample {
                         payload = parseNumDotNum(buf);
                     } else if (dataTypeFinal.equals("3octets")) {
                         payload = parse3octets(buf);
+                    } else {
+                        payload = parseRaw(buf, dataType);
                     }
 
                     publish(topic + "/ir/" + regAddress , qos, payload.getBytes());
                 }
             }
-
-            device.disconnect();
-
-            // temp
-            broker.disconnect();
         }
-
     }
 
     // publish(トピック, QOS, 送信データ)
     // MQTTサーバーのあるトピックへデータを配布（pusish)する。
     private void publish(String topic, int qos, byte[] payload) throws MqttException {
-        if (!broker.isConnected()) {
-            broker.connect();
-        }
+        
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         String format = "[mqtt][pub][%s][%s] = %s";
         broker.publish(topic, qos, payload);
         if (debugOutput) {
             System.out.println(String.format(format, timestamp, topic, new String(payload)));
         }
+    }
+
+    // subscribe()
+    // MQTTサーバーのあるトピックを購読（subscribe）する。
+    public void subscribe() throws MqttException {
+
+        broker.setCallback(new MqttCallback(){
+
+            @Override
+            public void connectionLost(Throwable arg0) {
+                System.out.println("[mqtt] connection lost");
+
+                try {
+                    System.out.println("[mqtt] try to reconnect");
+                    broker.reconnect();
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken arg0) {
+            }
+
+            // 購読（subscribe）しているMQTTトピックにデータがpublishされた時の処理
+            @Override
+            public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
+                String format_mqtt = "[mqtt][sub][%s][%s] %s";
+                String format_modbus = "[ModB][%s][%s] %s";
+                String address;
+                String res;
+
+                System.out.println(String.format(format_mqtt, new Timestamp(System.currentTimeMillis()), topic, mqttMessage));
+
+                // topicを見てデバイスを探す。
+                topic = topic.replaceFirst("^" + TOPIC_SET.replace("#", ""), "");
+                Device device = getDeviceByTopic(topic);
+                if (device == null) {
+                    System.out.println(String.format(format_modbus, "err", new Timestamp(System.currentTimeMillis()), "topic does not exist: " + topic));
+                    return;
+                }
+                    
+                // register番号を取得
+                address = topic.replace(device.getTopic() + "/hr/", "");
+
+                // addressが有効な番号かチェック
+                Pattern pattern = Pattern.compile("\\d+"); // 数字？
+                Register register = getRegister(device.getHoldingRegisters(), Integer.parseInt(address));
+                if (pattern.matcher(address).matches() && register != null) {
+                    // レジスタにwrite
+                    int intAddress = Integer.parseInt(address);
+                    String value = mqttMessage.toString();
+                    try {
+                        int intValue = Integer.parseInt(value);
+                        if (register.dataType.equals(DataType.Int16) ||
+                            register.dataType.equals(DataType.Uint16) ||
+                            register.dataType.equals(DataType.Boolean)) {
+                            device.writeInt16(intAddress, intValue);
+                        } else if (register.dataType.equals(DataType.Uint32)) {
+                            device.writeInt32(intAddress, intValue);
+                        }
+
+                        ByteBuffer buf = device.readHoldingRegister(intAddress, register.dataType.registers);
+                        buf.position(0);
+
+                        res = "OK";
+
+                    } catch (NumberFormatException nfe) {
+                        System.out.println("NumberFormatException: " + nfe.getMessage());
+                        res = "NG";
+                    }
+
+                    publish(TOPIC_SET_RES + "/" + topic, QOS_SET_RES, res.getBytes());
+                    
+                } else {
+                    publish(TOPIC_SET_RES + "/" + topic, QOS_SET_RES, "NG".getBytes());
+                }
+
+            }
+        });
+
+        broker.subscribe(TOPIC_SET, QOS_SET);
+        System.out.println("[mqtt] starting to subscribe");
+
+    }
+
+    private Device getDeviceByTopic(String topic) {
+        for (Device device : devices) {
+            if (topic.startsWith(device.getTopic() + "/")) {
+                return device;
+            }
+        }
+        return null;
+    }
+
+    private Register getRegister(Register[] registers, int address) {
+        for (Register register : registers) {
+            if (register.getAddress() == address) {
+                return register;
+            }
+        }
+        return null;
     }
 
     private String parse3octets(ByteBuffer buf) {
@@ -241,6 +356,8 @@ public class Sample {
         String payload = "";
         if (dataType.equals(DataType.Boolean) || dataType.equals(DataType.Uint16)) {
             payload = Integer.toUnsignedString(Short.toUnsignedInt(buf.getShort()));
+        } else if (dataType.equals(DataType.Int16)) {
+            payload = Short.toString(buf.getShort());
         } else if (dataType.equals(DataType.Float32)) {
             payload = Float.toString(buf.getFloat());
         } else if (dataType.equals(DataType.Uint32)) {
@@ -248,7 +365,7 @@ public class Sample {
         } else if (dataType.equals(DataType.Uint64)) {
             payload = Long.toUnsignedString(buf.getLong());
         } else if (dataType.equals(DataType.Uint128)) {
-            payload = "TODO";
+            payload = "";
         }
         return payload;
     }
@@ -282,13 +399,6 @@ public class Sample {
             String order = new String(Arrays.copyOfRange(binaries, 51 - offset, 56 - offset)); // 5 bits
             String site = new String(Arrays.copyOfRange(binaries, 56 - offset, 64 - offset)); // 8 bits
 
-            // System.out.println(String.format(format_csn, "productUnicode", productUnicode, Integer.parseInt(productUnicode, 2)));
-            // System.out.println(String.format(format_csn, "yearMonth", yearMonth, Integer.parseInt(yearMonth, 2)));
-            // System.out.println(String.format(format_csn, "day", day, Integer.parseInt(day, 2)));
-            // System.out.println(String.format(format_csn, "chassisNumber", chassisNumber, Integer.parseInt(chassisNumber, 2)));
-            // System.out.println(String.format(format_csn, "order", order, Integer.parseInt(order, 2)));
-            // System.out.println(String.format(format_csn, "site", site , Integer.parseInt(site, 2)));
-
             int iProductUnicode = Integer.parseInt(productUnicode, 2);
             int iProductUnicode1 = iProductUnicode % 32 + 64;
             int iProductUnicode2 = iProductUnicode / 32 + 64;
@@ -304,6 +414,16 @@ public class Sample {
         } catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
             return "";
+        }
+    }
+
+    public void sendKeepAlive() throws UnknownHostException, SocketException, ModbusException, IOException {
+        for ( Device device : devices ) {
+            if (device.getDeviceType().equals(Device.DeviceType.TOSHIBA_H2REX)) {
+                //device.connect();
+                int sec = java.util.Calendar.getInstance().get(java.util.Calendar.SECOND);
+                device.writeInt16(7, sec);
+            }
         }
     }
     

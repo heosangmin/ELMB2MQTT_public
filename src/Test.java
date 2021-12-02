@@ -1,7 +1,8 @@
 import java.nio.ByteBuffer;
 
 public class Test {
-    public static void main1(String[] args) {
+
+    public static void main(String[] args) {
 
         //int i = 0x9E25E695A66A61DD657050DB4E73652D;
 
@@ -36,5 +37,12 @@ public class Test {
         System.out.println(Integer.parseInt("000000001101010000110001", 2));
         System.out.println(Integer.parseInt("00100000001", 2));
         System.out.println(Integer.parseInt("0001000001", 2));
+
+        int int1 = 2147483647;
+        short short1 = (short)int1;
+
+        System.out.println(int1);
+        System.out.println(short1);
+
     }
 }
