@@ -1,5 +1,4 @@
 import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -9,20 +8,20 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class MqttBroker {
-    IMqttClient mqttClient;
-    String address;
-    int port;
-    String publisherId;
+    private static MqttBroker mqttBroker = null;
+    private MqttClient mqttClient = null;
 
-    public MqttBroker(String address, int port, String publisherId) {
-        this.address = address;
-        this.port = port;
-        this.publisherId = publisherId;
+    public static MqttBroker getBroker(String address, int port, String publisherId) throws MqttException {
+        if (mqttBroker == null) {
+            mqttBroker = new MqttBroker(address, port, publisherId);
+        }
+        return mqttBroker;
     }
 
-    public void connect() throws MqttException {
+    private MqttBroker(String address, int port, String publisherId) throws MqttException {
         String broker = "tcp://" + address + ":" + port;
         MemoryPersistence persistence = new MemoryPersistence();
+        
         mqttClient = new MqttClient(broker, publisherId, persistence);
 
         MqttConnectOptions options = new MqttConnectOptions();
