@@ -1,5 +1,4 @@
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -14,11 +13,11 @@ import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 
 import de.re.easymodbus.exceptions.ModbusException;
 
@@ -44,7 +43,7 @@ public class Sample {
 
     private MqttBroker broker;
 
-    public Sample() throws FileNotFoundException, IOException, MqttException {
+    public Sample() throws Exception {
         devices = new ArrayList<Device>();
 
         Properties prop = new Properties();
@@ -86,8 +85,10 @@ public class Sample {
         System.out.println(String.format("[properties] topic_set_res=%s | qos_set_res=%s", TOPIC_SET_RES, QOS_SET_RES));
 
         // Modbus機器情報（device）
+        Device.DeviceType deviceType = Device.DeviceType.UNKNOWN;
         byte[] jsonData;
         int device_count = Integer.parseInt(prop.getProperty("device_count", "1"));
+
         for (int i=1; i < device_count+1; i++) {
             String type = prop.getProperty("device_" + Integer.toString(i) + "_type");
             String ip = prop.getProperty("device_" + Integer.toString(i) + "_ip");
@@ -95,33 +96,27 @@ public class Sample {
             String topic = prop.getProperty("device_" + Integer.toString(i) + "_topic");
             int qos = Integer.parseInt(prop.getProperty("device_" + Integer.toString(i) + "_qos"));
             System.out.println(String.format(format_device, i, type, ip, port, topic));
-
+            
             if (type.equals(TYPE_ENAPTER_ELECTROLYSER)){
                 jsonData = Files.readAllBytes(Paths.get(JSON_ENAPTER_ELECTROLYSER));
-                ObjectMapper mapper = new ObjectMapper();
-                Device device = mapper.readValue(jsonData, Device.class);
-                device.setDeviceType(Device.DeviceType.ENAPTER_ELECTROLYSER);
-                device.setIpAddress(ip);
-                device.setPort(port);
-                device.setTopic(topic);
-                device.setQos(qos);
-                device.connect();
-                devices.add(device);
+                deviceType = Device.DeviceType.ENAPTER_ELECTROLYSER;
             } else if (type.equals(TYPE_TOSHIBA_H2REX)){
                 jsonData = Files.readAllBytes(Paths.get(JSON_TOSHIBA_H2REX));
-                ObjectMapper mapper = new ObjectMapper();
-                Device device = mapper.readValue(jsonData, Device.class);
-                device.setDeviceType(Device.DeviceType.TOSHIBA_H2REX);
-                device.setIpAddress(ip);
-                device.setPort(port);
-                device.setTopic(topic);
-                device.setQos(qos);
-                device.connect();
-                devices.add(device);
+                deviceType = Device.DeviceType.TOSHIBA_H2REX;
             } else {
                 System.out.println("error: type " + type + " is not supported.");
-                System.exit(-1);
+                throw new Exception("unsupported device type: " + type);
             }
+
+            ObjectMapper mapper = new ObjectMapper();
+            Device device = mapper.readValue(jsonData, Device.class);
+            device.setDeviceType(deviceType);
+            device.setIpAddress(ip);
+            device.setPort(port);
+            device.setTopic(topic);
+            device.setQos(qos);
+            device.connect();
+            devices.add(device);
         }
     }
 

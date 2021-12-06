@@ -19,7 +19,8 @@ public class Device {
 
     public static enum DeviceType {
         ENAPTER_ELECTROLYSER,
-        TOSHIBA_H2REX
+        TOSHIBA_H2REX,
+        UNKNOWN
     }
 
     private DeviceType deviceType;
