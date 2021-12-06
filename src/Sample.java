@@ -8,10 +8,14 @@ import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.ByteBufferBackedOutputStream;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -25,7 +29,7 @@ import de.re.easymodbus.exceptions.ModbusException;
 public class Sample {
     private final String CONFIG = "modbus-sample.properties";
     private final String JSON_ENAPTER_ELECTROLYSER = "EnapterElectrolyser.json";
-    private final String JSON_TOSHIBA_H2REX = "ToshibaH2Rex.json";
+    private final String JSON_TOSHIBA_H2REX = "ToshibaH2RexMap.json";
 
     private final String TYPE_ENAPTER_ELECTROLYSER = "EnapterElectrolyser";
     private final String TYPE_TOSHIBA_H2REX = "ToshibaH2Rex";
@@ -71,8 +75,7 @@ public class Sample {
         long mqtt_publish_interval = Long.parseLong(prop.getProperty("mqtt_publish_interval", "60000"));
         System.out.println(String.format(format_mqtt, mqtt_ip, mqtt_port, mqtt_qos, mqtt_publish_interval));
 
-        broker = new MqttBroker(mqtt_ip, mqtt_port, "mqtt_id_modbus");
-        broker.connect();
+        broker = MqttBroker.getBroker(mqtt_ip, mqtt_port, "mqtt_id_modbus");
 
         // mqtt subscribe topic, qos
         // SET用topic情報
@@ -129,69 +132,33 @@ public class Sample {
             String topic = device.getTopic();
             int qos = device.getQos();
 
-            for (Register hr : device.getHoldingRegisters()) {
-                String regName = hr.getName();
-                int regAddress = hr.getAddress();
-                DataType dataType = hr.getDataType();
-                String dataTypeFinal = hr.getDataTypeFinal();
-
+            HashMap<String, HoldingRegister> registerMap = device.getHoldingRegisters();
+            Set<String> keys = registerMap.keySet();
+            for (String key : keys) {
+                IRegister register = registerMap.get(key);
                 if (debugOutput) {
-                    System.out.println(String.format(format_register, "HR", regAddress, dataType, dataTypeFinal, regName));
+                    System.out.println(
+                        String.format(format_register,
+                            "HR",
+                            register.getAddress(),
+                            register.getDataType(),
+                            register.getDataTypeFinal(),
+                            register.getName()
+                        )
+                    );
                 }
-                
-                ByteBuffer buf = device.readHoldingRegister(regAddress, dataType.registers);
-                buf.position(0);
 
+                ByteBuffer buf = register.read();
+                byte[] payload;
                 if (publishRaw) {
-                    publish(topic + "/hr/" + regAddress, qos, buf.array());
+                    payload = buf.array();
                 } else {
-                    String payload = "";
-                    if (dataTypeFinal.equals("ipv4")) {
-                        payload = parseIpv4(buf);
-                    } else if (dataTypeFinal.equals("ChassisSerialNumber")) {
-                        payload = parseChassisSerialNumber(buf);
-                    } else {
-                        payload = parseRaw(buf, dataType);
-                    }
-    
-                    publish(topic + "/hr/" + regAddress , qos, payload.getBytes());
+                    payload = device.convertFinalData(register, buf);
                 }
+                publish(topic + "/hr/" + register.getAddress() , qos, payload);
+
             }
-
-            for (Register ir : device.getInputRegisters()) {
-                String regName = ir.getName();
-                int regAddress = ir.getAddress();
-                DataType dataType = ir.getDataType();
-                String dataTypeFinal = ir.getDataTypeFinal();
-
-                ByteBuffer buf = device.readInputRegister(regAddress, dataType.registers);
-                buf.position(0);
-
-                if (debugOutput) {
-                    System.out.println(String.format(format_register, "IR", regAddress, dataType, dataTypeFinal, regName));
-                }
-            
-                if (publishRaw) {
-                    publish(topic + "/ir/" + regAddress, qos, buf.array());
-                } else {
-                    String payload = "";
-                    if (dataTypeFinal.equals("ascii")) {
-                        payload = new String(buf.array());
-                    } else if (dataTypeFinal.equals("uuid")) {
-                        payload = parseUUID(buf);
-                    } else if (dataTypeFinal.equals("hex")) {
-                        payload = parseHex(buf);
-                    } else if (dataTypeFinal.equals("numDotNum")) {
-                        payload = parseNumDotNum(buf);
-                    } else if (dataTypeFinal.equals("3octets")) {
-                        payload = parse3octets(buf);
-                    } else {
-                        payload = parseRaw(buf, dataType);
-                    }
-
-                    publish(topic + "/ir/" + regAddress , qos, payload.getBytes());
-                }
-            }
+       
         }
     }
 
@@ -252,36 +219,36 @@ public class Sample {
 
                 // addressが有効な番号かチェック
                 Pattern pattern = Pattern.compile("\\d+"); // 数字？
-                Register register = getRegister(device.getHoldingRegisters(), Integer.parseInt(address));
-                if (pattern.matcher(address).matches() && register != null) {
-                    // レジスタにwrite
-                    int intAddress = Integer.parseInt(address);
-                    String value = mqttMessage.toString();
-                    try {
-                        int intValue = Integer.parseInt(value);
-                        if (register.dataType.equals(DataType.Int16) ||
-                            register.dataType.equals(DataType.Uint16) ||
-                            register.dataType.equals(DataType.Boolean)) {
-                            device.writeInt16(intAddress, intValue);
-                        } else if (register.dataType.equals(DataType.Uint32)) {
-                            device.writeInt32(intAddress, intValue);
-                        }
+                // Register register = getRegister(device.getHoldingRegisters(), Integer.parseInt(address));
+                // if (pattern.matcher(address).matches() && register != null) {
+                //     // レジスタにwrite
+                //     int intAddress = Integer.parseInt(address);
+                //     String value = mqttMessage.toString();
+                //     try {
+                //         int intValue = Integer.parseInt(value);
+                //         if (register.dataType.equals(DataType.Int16) ||
+                //             register.dataType.equals(DataType.Uint16) ||
+                //             register.dataType.equals(DataType.Boolean)) {
+                //             device.writeInt16(intAddress, intValue);
+                //         } else if (register.dataType.equals(DataType.Uint32)) {
+                //             device.writeInt32(intAddress, intValue);
+                //         }
 
-                        ByteBuffer buf = device.readHoldingRegister(intAddress, register.dataType.registers);
-                        buf.position(0);
+                //         ByteBuffer buf = device.readHoldingRegister(intAddress, register.dataType.registers);
+                //         buf.position(0);
 
-                        res = "OK";
+                //         res = "OK";
 
-                    } catch (NumberFormatException nfe) {
-                        System.out.println("NumberFormatException: " + nfe.getMessage());
-                        res = "NG";
-                    }
+                //     } catch (NumberFormatException nfe) {
+                //         System.out.println("NumberFormatException: " + nfe.getMessage());
+                //         res = "NG";
+                //     }
 
-                    publish(TOPIC_SET_RES + "/" + topic, QOS_SET_RES, res.getBytes());
+                //     publish(TOPIC_SET_RES + "/" + topic, QOS_SET_RES, res.getBytes());
                     
-                } else {
-                    publish(TOPIC_SET_RES + "/" + topic, QOS_SET_RES, "NG".getBytes());
-                }
+                // } else {
+                //     publish(TOPIC_SET_RES + "/" + topic, QOS_SET_RES, "NG".getBytes());
+                // }
 
             }
         });
@@ -295,15 +262,6 @@ public class Sample {
         for (Device device : devices) {
             if (topic.startsWith(device.getTopic() + "/")) {
                 return device;
-            }
-        }
-        return null;
-    }
-
-    private Register getRegister(Register[] registers, int address) {
-        for (Register register : registers) {
-            if (register.getAddress() == address) {
-                return register;
             }
         }
         return null;
@@ -415,9 +373,9 @@ public class Sample {
     public void sendKeepAlive() throws UnknownHostException, SocketException, ModbusException, IOException {
         for ( Device device : devices ) {
             if (device.getDeviceType().equals(Device.DeviceType.TOSHIBA_H2REX)) {
-                //device.connect();
                 int sec = java.util.Calendar.getInstance().get(java.util.Calendar.SECOND);
-                device.writeInt16(7, sec);
+                HoldingRegister hr = device.getHoldingRegister(7);
+                hr.write(sec);
             }
         }
     }

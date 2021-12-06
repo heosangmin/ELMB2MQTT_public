@@ -1,0 +1,240 @@
+{
+	"holdingRegisters": {
+		"1": {	
+			"address": 1,
+			"dataType": "Uint16",
+			"name": "各種指令",
+			"comment": "bit0:起動許可指令, bit1:起動禁止指令, bit2:起動指令, bit3:停止指令, bit4:窒素パージ開始, bit5:窒素パージ停止, bit6:窒素パージ停止"
+		},
+		"2": {	
+			"address": 2,
+			"dataType": "Uint16",
+			"name": "DSS許可, PLC時刻更新実行",
+			"comment": "bit0:DSS許可, bit1:PLC時刻更新実行"
+		},
+		"3":{	
+			"address": 3,
+			"dataType": "Uint16",
+			"name": "発電出力設定指令",
+			"comment": "下限:100, 上限:1000, 定数:0.1, 単位:kW"
+		},
+		"4":{	
+			"address": 4,
+			"dataType": "Uint16",
+			"name": "運転モード",
+			"comment": "下限:0, 上限:2, 定数:1, 備考:0=手動(EMS)、2=自動"
+		},
+		"5":{	
+			"address": 5,
+			"dataType": "Uint16",
+			"name": "DSS停止時間",
+			"comment": "下限:0, 上限:23040, 定数:1, 単位:min"
+		},
+		"6":{	
+			"address": 6,
+			"dataType": "Uint16",
+			"name": "DSS起動時間",
+			"comment": "下限:0, 上限:23040, 定数:1, 単位:min"
+		},
+		"7":{	
+			"address": 7,
+			"dataType": "Uint16",
+			"name": "EMS通信異常判定用 秒データ",
+			"comment": "下限:0, 上限:59, 定数:1, 単位:秒"
+		},
+		"8":{	
+			"address": 8,
+			"dataType": "Uint16",
+			"name": "PLC時刻更新 年",
+			"comment": "下限:1980, 上限:2079, 定数:1, 単位:年"
+		},
+		"9":{	
+			"address": 9,
+			"dataType": "Uint16",
+			"name": "PLC時刻更新 月",
+			"comment": "下限:1, 上限:12, 定数:1, 単位:月"
+		},
+		"10":{
+			"address": 10,
+			"dataType": "Uint16",
+			"name": "PLC時刻更新 日",
+			"comment": "下限:1, 上限:31, 定数:1, 単位:日"
+		},
+		"11":{
+			"address": 11,
+			"dataType": "Uint16",
+			"name": "PLC時刻更新 時",
+			"comment": "下限:1, 上限:23, 定数:1, 単位:時"
+		},
+		"12":{
+			"address": 12,
+			"dataType": "Uint16",
+			"name": "PLC時刻更新 分",
+			"comment": "下限:0, 上限:59, 定数:1, 単位:分"
+		},
+		"13":{
+			"address": 13,
+			"dataType": "Uint16",
+			"name": "PLC時刻更新 秒",
+			"comment": "下限:0, 上限:59, 定数:1, 単位:秒"
+		},
+		"14":{
+			"address": 14,
+			"dataType": "Uint16",
+			"name": "PLC時刻更新 曜日",
+			"comment": "下限:0, 上限:6, 備考:0～6：日～土"
+		},
+		"51":{
+			"address": 51,
+			"dataType": "Uint16",
+			"name": "各種状態",
+			"comment": "bit0:スタンバイ, bit1:起動工程中, bit2:発電中, bit3:停止工程中, bit4:故障停止中, bit5:起動禁止中, bit6:発電出力抑制中, bit7:自動リトライ停止中, bit8:窒素パージ中, bit9:窒素パージ完了解除待ち"
+		},
+		"52":{
+			"address": 52,
+			"dataType": "Int16",
+			"name": "年",
+			"comment": "下限:-32768, 上限:32767, 定数:1, 単位:年"
+		},
+		"53":{
+			"address": 53,
+			"dataType": "Int16",
+			"name": "月",
+			"comment": "下限:-32768, 上限:32767, 定数:1, 単位:月"
+		},
+		"54":{
+			"address": 54,
+			"dataType": "Int16",
+			"name": "日",
+			"comment": "下限:-32768, 上限:32767, 定数:1, 単位:日"
+		},
+		"55":{
+			"address": 55,
+			"dataType": "Int16",
+			"name": "時",
+			"comment": "下限:-32768, 上限:32767, 定数:1, 単位:時"
+		},
+		"56":{
+			"address": 56,
+			"dataType": "Int16",
+			"name": "分",
+			"comment": "下限:-32768, 上限:32767, 定数:1, 単位:分"
+		},
+		"57":{
+			"address": 57,
+			"dataType": "Int16",
+			"name": "秒",
+			"comment": "下限:-32768, 上限:32767, 定数:1, 単位:秒"
+		},
+		"58":{
+			"address": 58,
+			"dataType": "Int16",
+			"name": "燃料供給圧力計",
+			"comment": "下限:-32768, 上限:32767, 定数:0.1, 単位:kPa"
+		},
+		"59":{
+			"address": 59,
+			"dataType": "Int16",
+			"name": "燃料減圧弁出口圧力計",
+			"comment": "下限:-32768, 上限:32767, 定数:0.01, 単位:kPa"
+		},
+		"60":{
+			"address": 60,
+			"dataType": "Int16",
+			"name": "窒素入口圧力計",
+			"comment": "下限:-32768, 上限:32767, 定数:0.01, 単位:kPa"
+		},
+		"61":{
+			"address": 61,
+			"dataType": "Int16",
+			"name": "燃料流量計",
+			"comment": "下限:-32768, 上限:32767, 定数:0.1, 単位:NL/min"
+		},
+		"62":{
+			"address": 62,
+			"dataType": "Int16",
+			"name": "凍結防止ヒータ温度計",
+			"comment": "下限:-32768, 上限:32767, 定数:0.1, 単位:℃"
+		},
+		"63":{
+			"address": 63,
+			"dataType": "Int16",
+			"name": "二次冷却媒出口温度計",
+			"comment": "下限:-32768, 上限:32767, 定数:0.1, 単位:℃"
+		},
+		"64":{
+			"address": 64,
+			"dataType": "Int16",
+			"name": "ラジエータ出口温度計",
+			"comment": "下限:-32768, 上限:32767, 定数:0.1, 単位:℃"
+		},
+		"65":{
+			"address": 65,
+			"dataType": "Int16",
+			"name": "受電点電力計",
+			"comment": "下限:-32768, 上限:32767, 定数:0.1, 単位:kW"
+		},
+		"66":{
+			"address": 66,
+			"dataType": "Int16",
+			"name": "二次冷却媒循環ポンプ",
+			"comment": "下限:-32768, 上限:32767, 定数:0.1, 単位:%"
+		},
+		"67":{
+			"address": 67,
+			"dataType": "Uint16",
+			"name": "電池電流",
+			"comment": "下限:0, 上限:65535, 定数:0.01, 単位:A"
+		},
+		"68":{
+			"address": 68,
+			"dataType": "Int16",
+			"name": "送電端電力",
+			"comment": "下限:-32768, 上限:32767, 定数:0.1, 単位:kW"
+		},
+		"69":{
+			"address": 69,
+			"dataType": "Int16",
+			"name": "全電池電圧",
+			"comment": "下限:-32768, 上限:32767, 定数:0.1, 単位:V"
+		},
+		"70":{
+			"address": 70,
+			"dataType": "Uint16",
+			"name": "電池電流(移動平均)",
+			"comment": "下限:0, 上限:65535, 定数:0.01, 単位:A"
+		},
+		"71":{
+			"address": 71,
+			"dataType": "Int16",
+			"name": "積算発電回数",
+			"comment": "下限:-32768, 上限:32767, 定数:1, 単位:回"
+		},
+		"72":{
+			"address": 72,
+			"dataType": "Uint32",
+			"name": "積算発電時間",
+			"comment": "下限:0, 上限:2147483647, 定数:0.01, 単位:h"
+		},
+		"74":{
+			"address": 74,
+			"dataType": "Uint32",
+			"name": "積算発電電力量",
+			"comment": "下限:0, 上限:2147483647, 定数:0.1, 単位:kWh"
+		},
+		"76":{
+			"address": 76,
+			"dataType": "Uint32",
+			"name": "積算燃料流量",
+			"comment": "下限:0, 上限:2147483647, 定数:10, 単位:NL"
+		},
+		"78":{
+			"address": 78,
+			"dataType": "Uint32",
+			"name": "積算通電時間",
+			"comment": "下限:0, 上限:2147483647, 定数:0.01, 単位:h"
+		}
+	},
+	"inputRegisters": {}
+
+}
