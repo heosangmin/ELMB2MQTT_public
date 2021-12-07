@@ -77,6 +77,11 @@ public class Device {
             IRegister register = holdingRegisters.get(key);
             register.setModbusClient(modbusClient);
         }
+        keys = inputRegisters.keySet();
+        for (String key : keys) {
+            IRegister register = inputRegisters.get(key);
+            register.setModbusClient(modbusClient);
+        }
     }
 
     public HoldingRegister getHoldingRegister(int address) {
