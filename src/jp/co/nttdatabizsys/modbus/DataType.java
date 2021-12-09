@@ -1,3 +1,5 @@
+package jp.co.nttdatabizsys.modbus;
+
 public enum DataType {
     // name(bytes, registers)
     Boolean(2,1),

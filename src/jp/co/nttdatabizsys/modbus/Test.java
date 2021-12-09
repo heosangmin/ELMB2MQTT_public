@@ -1,3 +1,4 @@
+package jp.co.nttdatabizsys.modbus;
 import java.nio.ByteBuffer;
 
 public class Test {

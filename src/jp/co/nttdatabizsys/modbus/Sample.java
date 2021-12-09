@@ -1,8 +1,9 @@
+package jp.co.nttdatabizsys.modbus;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
@@ -26,7 +27,7 @@ import de.re.easymodbus.exceptions.ModbusException;
 public class Sample {
     private final String CONFIG = "modbus-sample.properties";
     private final String JSON_ENAPTER_ELECTROLYSER = "EnapterElectrolyser.json";
-    private final String JSON_TOSHIBA_H2REX = "ToshibaH2RexMap.json";
+    private final String JSON_TOSHIBA_H2REX = "ToshibaH2Rex.json";
 
     private final String TYPE_ENAPTER_ELECTROLYSER = "EnapterElectrolyser";
     private final String TYPE_TOSHIBA_H2REX = "ToshibaH2Rex";
@@ -34,7 +35,6 @@ public class Sample {
     private ArrayList<Device> devices;
     private boolean debugOutput = false;
     private boolean getOnly = false;
-    private boolean publishRaw = true;
 
     private String TOPIC_SET;
     private int QOS_SET;
@@ -63,10 +63,6 @@ public class Sample {
         // get only mode (onの場合、MQTTへpublishしない)
         getOnly = prop.getProperty("get_only", "false").equals("true");
         System.out.println(String.format("[properties] get_only=%b", getOnly));
-
-        // publish mode (true: byte[]をpublish)
-        publishRaw = prop.getProperty("publish_raw", "true").equals("true");
-        System.out.println(String.format("[properties] publish_raw=%b", publishRaw));
 
         // MQTTサーバー情報
         String mqtt_ip = prop.getProperty("mqtt_ip");
@@ -138,13 +134,7 @@ public class Sample {
             for (String key : keys) {
                 IRegister register = holdingRegisterMap.get(key);
                 logger.logWithTimestamp(String.format(format_register,"hr",register.getAddress(),register.getDataType(),register.getDataTypeFinal(),register.getName()));
-                ByteBuffer buf = register.read();
-                byte[] payload;
-                if (publishRaw) {
-                    payload = buf.array();
-                } else {
-                    payload = device.convertFinalData(register, buf);
-                }
+                byte[] payload = device.convertFinalData(register, register.read());
                 publish(topic + "/hr/" + register.getAddress() , qos, payload);
             }
 
@@ -154,13 +144,7 @@ public class Sample {
             for (String key : keys) {
                 IRegister register = inputRegisterMap.get(key);
                 logger.logWithTimestamp(String.format(format_register,"ir",register.getAddress(),register.getDataType(),register.getDataTypeFinal(),register.getName()));
-                ByteBuffer buf = register.read();
-                byte[] payload;
-                if (publishRaw) {
-                    payload = buf.array();
-                } else {
-                    payload = device.convertFinalData(register, buf);
-                }
+                byte[] payload = device.convertFinalData(register, register.read());
                 publish(topic + "/ir/" + register.getAddress() , qos, payload);
             }
        
@@ -222,13 +206,7 @@ public class Sample {
                         int qos = device.getQos();
                         int intValue = Integer.parseInt(mqttMessage.toString());
                         register.write(intValue);
-                        ByteBuffer buf = register.read();
-                        byte[] payload;
-                        if (publishRaw) {
-                            payload = buf.array();
-                        } else {
-                            payload = device.convertFinalData(register, buf);
-                        }
+                        byte[] payload = device.convertFinalData(register, register.read());
                         publish(topic, qos, payload);
                         res = "OK";
                     } catch (NumberFormatException nfe) {

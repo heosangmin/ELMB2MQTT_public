@@ -1,3 +1,5 @@
+package jp.co.nttdatabizsys.modbus;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -120,6 +122,23 @@ public class Device {
         return payload.getBytes();
     }
 
+    private String convertRaw(ByteBuffer buf, DataType dataType) {
+        String payload = "";
+        if (dataType.equals(DataType.Boolean) || dataType.equals(DataType.Uint16)) {
+            payload = Integer.toUnsignedString(Short.toUnsignedInt(buf.getShort()));
+        } else if (dataType.equals(DataType.Int16)) {
+            payload = Short.toString(buf.getShort());
+        } else if (dataType.equals(DataType.Float32)) {
+            payload = Float.toString(buf.getFloat());
+        } else if (dataType.equals(DataType.Uint32)) {
+            payload = Integer.toUnsignedString(buf.getInt());
+        } else if (dataType.equals(DataType.Uint64)) {
+            payload = Long.toUnsignedString(buf.getLong());
+        }
+        return payload;
+    }
+
+    // EnapterElectrolyser
     private String convert3octets(ByteBuffer buf) {
         String payload = "";
         byte[] bytes = buf.array();
@@ -127,6 +146,7 @@ public class Device {
         return payload;
     }
 
+    // EnapterElectrolyser
     private String convertNumDotNum(ByteBuffer buf) {
         String payload = "";
         byte[] bytes = buf.array();
@@ -134,6 +154,7 @@ public class Device {
         return payload;
     }
 
+    // EnapterElectrolyser
     private String convertHex(ByteBuffer buf) {
         byte[] bytes = buf.array();
         String payload = "0x";
@@ -143,6 +164,7 @@ public class Device {
         return payload;
     }
 
+    // EnapterElectrolyser
     private String convertUUID(ByteBuffer buf) {
         byte[] bytes = buf.array();
         String payload = "";
@@ -158,24 +180,7 @@ public class Device {
         return payload;
     }
 
-    private String convertRaw(ByteBuffer buf, DataType dataType) {
-        String payload = "";
-        if (dataType.equals(DataType.Boolean) || dataType.equals(DataType.Uint16)) {
-            payload = Integer.toUnsignedString(Short.toUnsignedInt(buf.getShort()));
-        } else if (dataType.equals(DataType.Int16)) {
-            payload = Short.toString(buf.getShort());
-        } else if (dataType.equals(DataType.Float32)) {
-            payload = Float.toString(buf.getFloat());
-        } else if (dataType.equals(DataType.Uint32)) {
-            payload = Integer.toUnsignedString(buf.getInt());
-        } else if (dataType.equals(DataType.Uint64)) {
-            payload = Long.toUnsignedString(buf.getLong());
-        } else if (dataType.equals(DataType.Uint128)) {
-            payload = "";
-        }
-        return payload;
-    }
-
+    // EnapterElectrolyser
     private String convertIpv4(ByteBuffer buf) {
         byte[] bytes = buf.array();
         String val1 = Integer.toString(Byte.toUnsignedInt(bytes[0]));
@@ -185,6 +190,7 @@ public class Device {
         return String.format("%s.%s.%s.%s", val1, val2, val3, val4);
     }
 
+    // EnapterElectrolyser
     private String convertChassisSerialNumber(ByteBuffer buf) {
         // ChassisSerialNumberは、64bitであることを前提とする。
         // https://handbook.enapter.com/electrolyser/el21_firmware/1.8.1/modbus_tcp_communication_interface.html#example-reading-chassis-serial-number

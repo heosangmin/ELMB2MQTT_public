@@ -1,3 +1,5 @@
+package jp.co.nttdatabizsys.modbus;
+
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Timer;
@@ -33,12 +35,12 @@ public class MainTest {
                 }
             };
 
-            Timer timer1 = new Timer("timer1");
-            Timer timer2 = new Timer("timer2");
+            Timer timer1 = new Timer("timer_Toshiba_keepalive");
+            Timer timer2 = new Timer("timer_read_and_publish");
 
             Calendar cal = Calendar.getInstance();
             
-            // 次回起動時刻設定(毎分5秒)
+            // 次回起動時刻設定
             // cal.clear(Calendar.SECOND);
             // cal.clear(Calendar.MILLISECOND);
             // cal.add(Calendar.MINUTE, 1);
@@ -50,7 +52,8 @@ public class MainTest {
 
         } catch (IOException | MqttException e) {
             e.printStackTrace();
-            System.exit(-1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }

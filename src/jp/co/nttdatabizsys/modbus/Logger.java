@@ -1,3 +1,5 @@
+package jp.co.nttdatabizsys.modbus;
+
 import java.sql.Timestamp;
 
 public class Logger {

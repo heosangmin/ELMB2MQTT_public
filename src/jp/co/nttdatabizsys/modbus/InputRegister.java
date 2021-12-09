@@ -1,3 +1,5 @@
+package jp.co.nttdatabizsys.modbus;
+
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -17,13 +19,4 @@ public class InputRegister extends Register  implements IRegister{
         buf.position(0);
         return buf;
     }
-
-    public void write(int value) {
-        System.out.println("[ModB][IR] Error: Input Register is read only.");
-    }
-
-    public void write(float value) {
-        System.out.println("[ModB][IR] Error: Input Register is read only.");
-    }
-
 }
